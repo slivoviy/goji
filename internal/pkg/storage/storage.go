@@ -8,8 +8,16 @@ import (
 type value struct {
 	stringValue string
 	intValue    int
-	valueType   string
+	valueType   valueType
 }
+
+type valueType string
+
+const (
+	ValueTypeInt       valueType = "D"
+	ValueTypeString    valueType = "S"
+	ValueTypeUndefined valueType = "U"
+)
 
 type Storage struct {
 	inner  map[string]value
@@ -36,22 +44,22 @@ func (s Storage) Set(k, v string) {
 
 	var val value
 	switch valueType {
-	case "D":
+	case ValueTypeInt:
 		intValue, _ := strconv.Atoi(v)
 		val = value{
 			stringValue: v,
 			intValue:    intValue,
 			valueType:   valueType,
 		}
-	case "S":
+	case ValueTypeString:
 		val = value{
 			stringValue: v,
 			valueType:   valueType,
 		}
-	default:
+	case ValueTypeUndefined:
 		s.logger.Error(
 			"trying to set value of unknown type",
-			zap.String("type", valueType),
+			zap.Any("type", valueType),
 			zap.String("value", v),
 			zap.String("key", k),
 		)
@@ -74,19 +82,29 @@ func (s Storage) Get(k string) *string {
 	return &result.stringValue
 }
 
-func (s Storage) GetType(k string) string {
+func (s Storage) GetType(k string) valueType {
 	result, ok := s.inner[k]
 	if !ok {
-		return "No"
+		return ValueTypeUndefined
 	}
 
 	return result.valueType
 }
 
-func evaluateType(v string) string {
-	if _, err := strconv.Atoi(v); err == nil {
-		return "D"
-	} else {
-		return "S"
+func evaluateType(v string) valueType {
+	var val any
+
+	val, err := strconv.Atoi(v)
+	if err != nil {
+		val = v
+	}
+
+	switch val.(type) {
+	case int:
+		return ValueTypeInt
+	case string:
+		return ValueTypeString
+	default:
+		return ValueTypeUndefined
 	}
 }
