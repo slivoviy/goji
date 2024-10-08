@@ -32,21 +32,29 @@ func NewStorage() (Storage, error) {
 }
 
 func (s Storage) Set(k, v string) {
-	valueType := checkType(v)
+	valueType := evaluateType(v)
 
 	var val value
-	if valueType == "D" {
+	switch valueType {
+	case "D":
 		intValue, _ := strconv.Atoi(v)
 		val = value{
 			stringValue: v,
 			intValue:    intValue,
 			valueType:   valueType,
 		}
-	} else {
+	case "S":
 		val = value{
 			stringValue: v,
 			valueType:   valueType,
 		}
+	default:
+		s.logger.Error(
+			"trying to set value of unknown type",
+			zap.String("type", valueType),
+			zap.String("value", v),
+			zap.String("key", k),
+		)
 	}
 
 	s.inner[k] = val
@@ -75,7 +83,7 @@ func (s Storage) GetType(k string) string {
 	return result.valueType
 }
 
-func checkType(v string) string {
+func evaluateType(v string) string {
 	if _, err := strconv.Atoi(v); err == nil {
 		return "D"
 	} else {
