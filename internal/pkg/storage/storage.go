@@ -8,15 +8,15 @@ import (
 type value struct {
 	stringValue string
 	intValue    int
-	valueType   valueType
+	valueType   ValueType
 }
 
-type valueType string
+type ValueType string
 
 const (
-	ValueTypeInt       valueType = "D"
-	ValueTypeString    valueType = "S"
-	ValueTypeUndefined valueType = "U"
+	ValueTypeInt       ValueType = "D"
+	ValueTypeString    ValueType = "S"
+	ValueTypeUndefined ValueType = "U"
 )
 
 type Storage struct {
@@ -59,7 +59,7 @@ func (s Storage) Set(k, v string) {
 	case ValueTypeUndefined:
 		s.logger.Error(
 			"trying to set value of unknown type",
-			zap.Any("type", valueType),
+			zap.String("type", string(valueType)),
 			zap.String("value", v),
 			zap.String("key", k),
 		)
@@ -82,7 +82,7 @@ func (s Storage) Get(k string) *string {
 	return &result.stringValue
 }
 
-func (s Storage) GetType(k string) valueType {
+func (s Storage) GetType(k string) ValueType {
 	result, ok := s.inner[k]
 	if !ok {
 		return ValueTypeUndefined
@@ -91,20 +91,11 @@ func (s Storage) GetType(k string) valueType {
 	return result.valueType
 }
 
-func evaluateType(v string) valueType {
-	var val any
-
-	val, err := strconv.Atoi(v)
+func evaluateType(v string) ValueType {
+	_, err := strconv.Atoi(v)
 	if err != nil {
-		val = v
+		return ValueTypeString
 	}
 
-	switch val.(type) {
-	case int:
-		return ValueTypeInt
-	case string:
-		return ValueTypeString
-	default:
-		return ValueTypeUndefined
-	}
+	return ValueTypeInt
 }
