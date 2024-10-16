@@ -8,15 +8,15 @@ import (
 type value struct {
 	stringValue string
 	intValue    int
-	valueType   ValueType
+	valueType   valueType
 }
 
-type ValueType string
+type valueType string
 
 const (
-	ValueTypeInt       ValueType = "D"
-	ValueTypeString    ValueType = "S"
-	ValueTypeUndefined ValueType = "U"
+	ValueTypeInt       valueType = "D"
+	ValueTypeString    valueType = "S"
+	ValueTypeUndefined valueType = "U"
 )
 
 type Storage struct {
@@ -82,16 +82,16 @@ func (s Storage) Get(k string) *string {
 	return &result.stringValue
 }
 
-func (s Storage) GetType(k string) ValueType {
+func (s Storage) GetType(k string) string {
 	result, ok := s.inner[k]
 	if !ok {
-		return ValueTypeUndefined
+		return string(ValueTypeUndefined)
 	}
 
-	return result.valueType
+	return string(result.valueType)
 }
 
-func evaluateType(v string) ValueType {
+func evaluateType(v string) valueType {
 	_, err := strconv.Atoi(v)
 	if err != nil {
 		return ValueTypeString
