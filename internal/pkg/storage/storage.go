@@ -72,7 +72,7 @@ func (s Storage) Set(k, v string) {
 }
 
 func (s Storage) Get(k string) *string {
-	result, ok := s.get(k)
+	result, ok := s.inner[k]
 	if !ok {
 		return nil
 	}
@@ -80,11 +80,6 @@ func (s Storage) Get(k string) *string {
 	s.logger.Info("value got", zap.String("key", k), zap.String("value", result.stringValue))
 
 	return &result.stringValue
-}
-
-func (s Storage) get(k string) (value, bool) {
-	result, ok := s.inner[k]
-	return result, ok
 }
 
 func (s Storage) GetType(k string) string {
